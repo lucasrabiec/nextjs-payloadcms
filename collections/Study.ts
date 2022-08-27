@@ -1,7 +1,8 @@
 import { CollectionConfig } from 'payload/types';
-import { Type as MediaType } from './Media';
 import slug from '../fields/slug';
 import meta, { Type as MetaType } from '../fields/meta';
+import { Type as MediaType } from './Media';
+import { Type as CategoryType } from './Category';
 import { Content, Type as ContentType } from '../blocks/Content';
 import { Image, Type as ImageType } from '../blocks/Image';
 import Statistics, { Type as StatisticsType } from '../blocks/Statistics';
@@ -33,72 +34,37 @@ export type Layout =
 
 export type Type = {
   title: string
-  heroType: 'minimal' | 'contentAboveImage' | 'contentLeftOfImage'
-  heroContent: unknown
-  heroImage?: MediaType
+  featuredImage: MediaType
+  previewImages: {
+    image: MediaType
+  }[]
+  client?: string
+  location?: string
+  categories?: CategoryType[]
   slug: string
-  image?: MediaType
-  layout: Layout[]
   meta: MetaType
 }
 
-export const Page: CollectionConfig = {
-  slug: 'pages',
-  admin: {
-    useAsTitle: 'title',
-  },
-  access: {
-    read: (): boolean => true, // Everyone can read Pages
-  },
+const Study: CollectionConfig = {
+  slug: 'studies',
   fields: [
     {
       name: 'title',
-      label: 'Page Title',
+      label: 'Title',
       type: 'text',
       required: true,
     },
     {
-      type: 'radio',
-      name: 'heroType',
-      label: 'Hero Type',
-      required: true,
-      defaultValue: 'minimal',
-      options: [
-        {
-          label: 'Minimal',
-          value: 'minimal',
-        },
-        {
-          label: 'Content Above Image',
-          value: 'contentAboveImage',
-        },
-        {
-          label: 'Content Left of Image',
-          value: 'contentLeftOfImage',
-        },
-      ],
-    },
-    {
-      name: 'heroContent',
-      label: 'Hero Content',
-      type: 'richText',
-      required: true,
-    },
-    {
-      name: 'heroImage',
-      label: 'Hero Image',
+      name: 'featuredImage',
+      label: 'Featured Image',
       type: 'upload',
       relationTo: 'media',
       required: true,
-      admin: {
-        condition: (_, siblingData) => siblingData?.heroType === 'contentAboveImage' || siblingData?.heroType === 'contentLeftOfImage',
-      },
     },
     {
       name: 'layout',
-      label: 'Page Layout',
+      label: 'Study Layout',
       type: 'blocks',
-      minRows: 1,
       blocks: [
         CallToAction,
         Content,
@@ -115,9 +81,51 @@ export const Page: CollectionConfig = {
         StudySlider,
       ],
     },
-    meta,
+    {
+      name: 'previewImages',
+      label: 'Preview Images',
+      type: 'array',
+      minRows: 1,
+      maxRows: 3,
+      fields: [
+        {
+          name: 'image',
+          label: 'Image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'client',
+      label: 'Client',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'location',
+      label: 'Location',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'categories',
+      label: 'Categories',
+      type: 'relationship',
+      relationTo: 'categories',
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
     slug,
+    meta,
   ],
 };
 
-export default Page;
+export default Study;
